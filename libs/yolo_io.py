@@ -1,15 +1,20 @@
 #!/usr/bin/env python
 # -*- coding: utf8 -*-
-import codecs
+import sys
 import os
+from xml.etree import ElementTree
+from xml.etree.ElementTree import Element, SubElement
 
+from PyQt5.QtWidgets import QMessageBox
+from lxml import etree
+import codecs
 from libs.constants import DEFAULT_ENCODING
 
 TXT_EXT = '.txt'
 ENCODE_METHOD = DEFAULT_ENCODING
 
-class YOLOWriter:
 
+class YOLOWriter:
     def __init__(self, folder_name, filename, img_size, database_src='Unknown', local_img_path=None):
         self.folder_name = folder_name
         self.filename = filename
@@ -49,19 +54,25 @@ class YOLOWriter:
     def save(self, class_list=[], target_file=None):
 
         out_file = None  # Update yolo .txt
-        out_class_file = None   # Update class list .txt
+        out_class_file = None  # Update class list .txt
 
         if target_file is None:
             out_file = open(
-            self.filename + TXT_EXT, 'w', encoding=ENCODE_METHOD)
+                self.filename + TXT_EXT, 'w', encoding=ENCODE_METHOD)
             classes_file = os.path.join(os.path.dirname(os.path.abspath(self.filename)), "classes.txt")
-            out_class_file = open(classes_file, 'w')
+            # out_class_file = open(classes_file, 'w')
 
         else:
             out_file = codecs.open(target_file, 'w', encoding=ENCODE_METHOD)
             classes_file = os.path.join(os.path.dirname(os.path.abspath(target_file)), "classes.txt")
-            out_class_file = open(classes_file, 'w')
+            # out_class_file = open(classes_file, 'w')
 
+        # print (file_path, self.class_list_path)
+        try:
+            out_classes_file = open(classes_file, 'r')
+            class_list = out_classes_file.read().strip('\n').split('\n')
+        except Exception:
+            print("No class list found")
 
         for box in self.box_list:
             class_index, x_center, y_center, w, h = self.bnd_box_to_yolo_line(box, class_list)
@@ -70,12 +81,11 @@ class YOLOWriter:
 
         # print (classList)
         # print (out_class_file)
-        for c in class_list:
-            out_class_file.write(c+'\n')
-
-        out_class_file.close()
+        # for c in class_list:
+        #     out_class_file.write(c+'\n')
+        #
+        # out_class_file.close()
         out_file.close()
-
 
 
 class YoloReader:
@@ -93,9 +103,11 @@ class YoloReader:
             self.class_list_path = class_list_path
 
         # print (file_path, self.class_list_path)
-
-        classes_file = open(self.class_list_path, 'r')
-        self.classes = classes_file.read().strip('\n').split('\n')
+        try:
+            classes_file = open(self.class_list_path, 'r')
+            self.classes = classes_file.read().strip('\n').split('\n')
+        except Exception:
+            print("No class list found")
 
         # print (self.classes)
 
