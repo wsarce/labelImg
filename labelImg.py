@@ -1516,6 +1516,7 @@ class MainWindow(QMainWindow, WindowMixin):
             self.statusBar().show()
 
     def close_file(self, _value=False):
+        return
         if not self.may_continue():
             return
         self.reset_state()
