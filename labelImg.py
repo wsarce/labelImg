@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 import argparse
 import codecs
+import glob
 import os.path
 import platform
 import shutil
@@ -1188,10 +1189,10 @@ class MainWindow(QMainWindow, WindowMixin):
 
     def show_bounding_box_from_annotation_file(self, file_path):
         if self.default_save_dir is not None:
-            basename = os.path.basename(os.path.splitext(file_path)[0])
-            xml_path = os.path.join(self.default_save_dir, basename + XML_EXT)
-            txt_path = os.path.join(self.default_save_dir, basename + TXT_EXT)
-            json_path = os.path.join(self.default_save_dir, basename + JSON_EXT)
+            # basename = os.path.basename(os.path.splitext(file_path)[0])
+            xml_path = file_path[:-4] + XML_EXT
+            txt_path = file_path[:-4] + TXT_EXT
+            json_path = file_path[:-4] + JSON_EXT
 
             """Annotation file priority:
             PascalXML > YOLO
@@ -1292,12 +1293,13 @@ class MainWindow(QMainWindow, WindowMixin):
         extensions = ['.%s' % fmt.data().decode("ascii").lower() for fmt in QImageReader.supportedImageFormats()]
         images = []
 
-        for root, dirs, files in os.walk(folder_path):
-            for file in files:
-                if file.lower().endswith(tuple(extensions)):
-                    relative_path = os.path.join(root, file)
-                    path = ustr(os.path.abspath(relative_path))
-                    images.append(path)
+        files = [f for f in glob.glob(f'{folder_path}/**/*.png', recursive=True)]
+        # for root, dirs, files in os.walk(folder_path):
+        for file in files:
+            if file.lower().endswith(tuple(extensions)):
+                # relative_path = os.path.join(root, file)
+                # path = ustr(os.path.abspath(relative_path))
+                images.append(ustr(os.path.abspath(file)))
         natural_sort(images, key=lambda x: x.lower())
         return images
 
@@ -1475,9 +1477,9 @@ class MainWindow(QMainWindow, WindowMixin):
     def save_file(self, _value=False):
         if self.default_save_dir is not None and len(ustr(self.default_save_dir)):
             if self.file_path:
-                image_file_name = os.path.basename(self.file_path)
-                saved_file_name = os.path.splitext(image_file_name)[0]
-                saved_path = os.path.join(ustr(self.default_save_dir), saved_file_name)
+                # image_file_name = os.path.basename(self.file_path)
+                saved_file_name = self.file_path[:-4]
+                saved_path = ustr(saved_file_name)
                 self._save_file(saved_path)
         else:
             image_file_dir = os.path.dirname(self.file_path)
